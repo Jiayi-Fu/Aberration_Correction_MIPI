@@ -1,0 +1,112 @@
+# general settings
+name: fovkpn_perturbed
+model_type: RestorationModel
+scale: 1
+num_gpu: 4 # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: General_Image_Train
+    type: Dataset_from_h5
+    dataroot_h5: datasets/train/train_dataset_pertubed.h5
+    sigma: 5
+    recrop_size: 256
+    io_backend:
+      type: disk
+    use_shuffle: true
+    num_worker_per_gpu: 8
+    batch_size_per_gpu: 8
+    mini_batch_sizes: [8]   
+    iters: [600000]
+    gt_size: 256   
+    gt_sizes: [256]
+    ## ------------------------------------------------------------
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+# network structures
+network_g:
+  type: FOVKPN
+  input_channel: 5
+  output_channel: 3
+  n_channel: 32
+  offset_channel: 32
+
+
+# path
+path:
+  pretrain_network_g: ~
+  strict_load: true
+  # resume_state: ~
+
+# training settings
+train:
+  optim_g:
+    type: Adam
+    lr: !!float 1e-4
+    weight_decay: !!float 1e-4
+    betas: [0.9, 0.999]
+
+  scheduler:
+    type: MultiStepLR
+    milestones: [10000, 20000, 30000, 40000, 50000, 60000, 70000]
+    gamma: 0.5
+
+  total_iter: 200000
+  warmup_iter: -1  # no warm up
+
+
+  pixel_opt:
+    type: MSELoss
+    loss_weight: 1.0
+    reduction: mean
+
+  perceptual_opt:
+    type: PerceptualLoss
+    layer_weights:
+      relu1_2: 1.0
+      relu2_2: 1.0
+      relu3_3: 1.0
+      relu4_3: 1.0
+    vgg_type: vgg19
+    use_input_norm: true
+    perceptual_weight: !!float 1e-1
+    style_weight: !!float 1e-1
+    criterion: l2
+
+
+# validation settings·
+val:
+  val_freq: !!float 10000000
+  save_img: true
+  isp: false
+  key_metric: psnr
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 4
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 4
+      test_y_channel: false
+
+
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 1e4
+  save_latest_freq: !!float 1e5
+  show_tf_imgs_freq: !!float 1e3
+  use_tb_logger: true
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 16500 #29500
+
+find_unused_parameters: true
+

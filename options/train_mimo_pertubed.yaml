@@ -1,0 +1,102 @@
+# general settings
+name: mimo_perturbed
+model_type: RestorationModel
+scale: 1
+num_gpu: 4 # set num_gpu: 0 for cpu mode
+manual_seed: 0
+
+# dataset and data loader settings
+datasets:
+  train:
+    name: General_Image_Train
+    type: Dataset_from_h5
+    dataroot_h5: datasets/train/train_dataset_pertubed.h5
+    sigma: 5
+    recrop_size: 256
+    io_backend:
+      type: disk
+    use_shuffle: true
+    num_worker_per_gpu: 8
+    batch_size_per_gpu: 8
+    mini_batch_sizes: [8]   
+    iters: [200000]
+    gt_size: 256   
+    gt_sizes: [256]
+    ## ------------------------------------------------------------
+    dataset_enlarge_ratio: 1
+    prefetch_mode: ~
+
+
+network_g:
+  type: MIMOUNet
+  input_channel: 3
+
+
+# path
+path:
+  pretrain_network_g: ~
+  strict_load: true
+  # resume_state: ~
+
+# training settings
+train:
+  optim_g:
+    type: Adam
+    lr: !!float 1e-4
+    weight_decay: !!float 1e-4
+    betas: [0.9, 0.999]
+
+  scheduler:
+    type: MultiStepLR
+    milestones: [10000, 20000, 30000, 40000, 50000, 60000, 70000]
+    gamma: 0.5
+
+  total_iter: 200000
+  warmup_iter: -1  # no warm up
+
+
+  pixel_SRN_opt:
+    type: SRN_loss
+    loss_weight: 1.0
+    reduction: mean
+    
+  fft_opt:
+    type: Multi_FFT_loss
+    loss_weight: 0.1
+    reduction: mean
+ 
+
+
+# validation settings·
+val:
+  val_freq: !!float 10000000
+  save_img: true
+  isp: false
+  key_metric: psnr
+  metrics:
+    psnr: # metric name, can be arbitrary
+      type: calculate_psnr
+      crop_border: 4
+      test_y_channel: false
+    ssim:
+      type: calculate_ssim
+      crop_border: 4
+      test_y_channel: false
+
+
+
+# logging settings
+logger:
+  print_freq: 100
+  save_checkpoint_freq: !!float 1e4
+  save_latest_freq: !!float 1e5
+  show_tf_imgs_freq: !!float 1e3
+  use_tb_logger: true
+
+# dist training settings
+dist_params:
+  backend: nccl
+  port: 16500 #29500
+
+find_unused_parameters: true
+
