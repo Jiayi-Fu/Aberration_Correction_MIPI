@@ -30,7 +30,7 @@ sh train_mimo_pertubed.sh
 ```
 ## Inference
 ```
-python inference/inference_mimo.py -w model_path -i datasets/valid
+python inference/inference_mimo.py -w model_path -i datasets/valid/lq
 ```
 
 ## Citation
