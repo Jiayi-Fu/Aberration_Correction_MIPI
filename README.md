@@ -14,6 +14,32 @@ This repository contains both training code and evalutation code for [Aberration
     |-- lq
     |-- wb_params.npz
 ```
+### Training Data Loading
+
+The method for loading training data can be referred to in the `fewlens/data/h5_dataset.py` file. For each training sample, the `item` contains multiple channels. The data is split as follows:
+
+```python
+lq = item[:3]        # The first three channels represent the Low-Quality (LQ) image
+gt = item[3:6]        # Channels 4 to 6 represent the Ground-Truth (GT) image
+fld_info = item[6:8]  # Channels 7 and 8 represent normalized (x, y) coordinate information
+```
+``fld_info`` **Explanation**
+The fld_info field encodes the spatial position of each pixel using its (x, y) coordinates, normalized to the range ``[-1, 1]``.
+
+**Normalization Formula**
+For an image of height ``h`` and width ``w``, the normalized coordinates are computed as:
+
+```
+x_normalized = (x - h / 2) / h
+y_normalized = (y - w / 2) / w
+```
+Definition of Terms
+``x``, ``y``: Original pixel coordinates
+
+``h``, ``w``: Height and width of the image
+
+``x_normalized``, ``y_normalized``: Normalized spatial coordinates in the range ``[-1, 1]``
+
 ## Dependencies and Installation
 ```bash
 conda create -n fewlens python=3.9
