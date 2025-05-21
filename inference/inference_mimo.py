@@ -105,7 +105,6 @@ def main():
             pbar.set_description(f'Test {img_name}')
             
             save_path = os.path.join(output_folder,f'{img_name}.png')
-            print(img_name)
             wb = wb_param[img_name]
             
             path = os.path.join(args.input,image)
