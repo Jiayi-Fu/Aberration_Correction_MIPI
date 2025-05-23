@@ -56,6 +56,7 @@ sh train_mimo_pertubed.sh
 ```
 ## Inference
 ```
+export PYTHONPATH="./:${PYTHONPATH}" 
 python inference/inference_mimo.py -w model_path -i datasets/valid/lq
 ```
 
